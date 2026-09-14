@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 먹지? | 점심 메뉴 추천</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .menu-card {
+            background-color: #f1f3f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .menu-category {
+            color: #ff6b6b;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .menu-name {
+            color: #212529;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .btn-recommend {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-recommend:hover {
+            background-color: #fa5252;
+        }
+
+        .btn-recommend:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>오늘 뭐 먹지? 🍱</h1>
+        <p class="subtitle">결정이 어려울 땐 버튼을 눌러보세요!</p>
+
+        <div class="menu-card">
+            <div class="menu-icon" id="menu-icon">❓</div>
+            <div class="menu-category" id="menu-category">클릭해보세요!</div>
+            <div class="menu-name" id="menu-name">오늘의 추천 메뉴</div>
+        </div>
+
+        <button class="btn-recommend" onclick="recommendMenu()">점심 메뉴 추천받기</button>
+    </div>
+
+    <script>
+        // 점심 메뉴 데이터 목록
+        const menuList = [
+            { category: '한식', name: '김치찌개', icon: '🍲' },
+            { category: '한식', name: '제육볶음', icon: '🥩' },
+            { category: '한식', name: '비빔밥', icon: '🍚' },
+            { category: '한식', name: '된장찌개', icon: '🥘' },
+            { category: '중식', name: '짜장면 & 짬뽕', icon: '🍜' },
+            { category: '중식', name: '볶음밥', icon: '🍳' },
+            { category: '일식', name: '돈가스', icon: '🍱' },
+            { category: '일식', name: '초밥', icon: '🍣' },
+            { category: '일식', name: '라멘', icon: '🍥' },
+            { category: '양식', name: '파스타', icon: '🍝' },
+            { category: '양식', name: '수제버거', icon: '🍔' },
+            { category: '분식', name: '떡볶이 & 튀김', icon: '🍢' },
+            { category: '간편식', name: '샌드위치 & 샐러드', icon: '🥪' }
+        ];
+
+        function recommendMenu() {
+            const iconElem = document.getElementById('menu-icon');
+            const categoryElem = document.getElementById('menu-category');
+            const nameElem = document.getElementById('menu-name');
+
+            // 버튼 클릭 시 무작위 추출
+            const randomIndex = Math.floor(Math.random() * menuList.length);
+            const selectedMenu = menuList[randomIndex];
+
+            // 화면에 반영
+            iconElem.textContent = selectedMenu.icon;
+            categoryElem.textContent = selectedMenu.category;
+            nameElem.textContent = selectedMenu.name;
+        }
+    </script>
+
+</body>
+</html>ㅑ
