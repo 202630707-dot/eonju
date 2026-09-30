@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스텔스 핏 (StealthFit)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 레트로 픽셀 폰트 (Neo DGM) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/NeoDGM.css" />
+  <style>
+    body {
+      font-family: 'NeoDGM', sans-serif;
+      background-color: #0d0f18;
+      color: #e2e8f0;
+    }
+    .pixel-btn {
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      transition: all 0.1s ease;
+    }
+    .pixel-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <!-- Header & Step Indicator -->
+  <header class="border-b-4 border-green-500 bg-slate-900/90 py-4 px-6 sticky top-0 z-50 backdrop-blur">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl animate-bounce">🥷</span>
+        <div>
+          <h1 class="text-2xl font-bold text-green-400 tracking-wider">STEALTH FIT</h1>
+          <p class="text-xs text-slate-400">교실 안 몰래 운동 타임테이블 추천 시스템</p>
+        </div>
+      </div>
+      
+      <!-- 진행 단계 표시바 -->
+      <div class="flex items-center gap-2 text-xs font-bold">
+        <span id="step-badge-1" class="px-3 py-1 rounded-full bg-green-500 text-black">1. 시간표</span>
+        <span class="text-slate-600">></span>
+        <span id="step-badge-2" class="px-3 py-1 rounded-full bg-slate-800 text-slate-500">2. 좌석</span>
+        <span class="text-slate-600">></span>
+        <span id="step-badge-3" class="px-3 py-1 rounded-full bg-slate-800 text-slate-500">3. 운동</span>
+        <span class="text-slate-600">></span>
+        <span id="step-badge-4" class="px-3 py-1 rounded-full bg-slate-800 text-slate-500">4. 결과</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 mt-8">
+
+    <!-- PAGE 1: 오늘 시간표 설정 -->
+    <section id="page-1" class="page-step bg-slate-900 border-2 border-slate-700 p-6 rounded-xl shadow-xl">
+      <h2 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
+        <span>1단계: 요일 및 교시별 시간표 설정</span>
+      </h2>
+      <p class="text-sm text-slate-400 mb-6">작전을 수행할 요일과 총 수업 교시 수를 선택한 후 과목 정보를 입력해주세요.</p>
+
+      <!-- 요일 선택 및 교시 수 조절 컨트롤러 -->
+      <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <!-- 요일 선택 버튼 -->
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <span class="text-xs text-yellow-400 font-bold mr-1">📅 요일:</span>
+          <div class="flex gap-1 flex-1">
+            <button type="button" onclick="selectDay('월')" id="day-월" class="day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-green-500 text-black">월</button>
+            <button type="button" onclick="selectDay('화')" id="day-화" class="day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400">화</button>
+            <button type="button" onclick="selectDay('수')" id="day-수" class="day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400">수</button>
+            <button type="button" onclick="selectDay('목')" id="day-목" class="day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400">목</button>
+            <button type="button" onclick="selectDay('금')" id="day-금" class="day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400">금</button>
+          </div>
+        </div>
+
+        <!-- 6교시 / 7교시 토글 -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+          <span class="text-xs text-yellow-400 font-bold mr-1">⏰ 오늘 총 교시:</span>
+          <button type="button" onclick="setMaxPeriod(6)" id="period-count-6" class="period-count-btn px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400">6교시까지</button>
+          <button type="button" onclick="setMaxPeriod(7)" id="period-count-7" class="period-count-btn px-3 py-1.5 text-xs rounded font-bold bg-green-500 text-black">7교시까지</button>
+        </div>
+      </div>
+
+      <div id="timetable-inputs" class="space-y-4 mb-8">
+        <!-- JS로 교시 입력 필드가 생성됩니다 -->
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="goToPage(2)" class="pixel-btn bg-green-500 hover:bg-green-400 text-slate-950 font-extrabold text-lg px-8 py-3 rounded-lg">
+          다음 단계 (좌석 선택) ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- PAGE 2: 내 현재 위치 지정 -->
+    <section id="page-2" class="page-step hidden bg-slate-900 border-2 border-slate-700 p-6 rounded-xl shadow-xl">
+      <h2 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
+        <span>2단계: 내 현재 좌석 위치 지정 (세로줄/분단 구조)</span>
+      </h2>
+      <p class="text-sm text-slate-400 mb-6">우리 반 배치도 (1·2·5열: 6명 / 3·4·6열: 5명) 기반 감시 사각지대 계산</p>
+
+      <div class="w-full bg-amber-900/40 border-2 border-amber-600 text-amber-300 text-center py-2 mb-6 rounded font-bold">
+        👨‍🏫 [ 교 탁 (선생님 위치) ]
+      </div>
+
+      <div class="p-4 bg-slate-950 rounded-lg border border-slate-800 overflow-x-auto mb-4">
+        <div class="grid grid-cols-6 gap-2 min-w-[500px]" id="seat-grid">
+          <!-- JS로 세로줄(분단) 단위 좌석 렌더링 -->
+        </div>
+      </div>
+      <p class="text-center text-xs text-slate-400 mb-8">* 선택한 좌석: <span id="selected-seat-text" class="text-green-400 font-bold">3열 3행 (기본값)</span></p>
+
+      <div class="flex justify-between">
+        <button onclick="goToPage(1)" class="pixel-btn bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg px-6 py-3 rounded-lg">
+          ⬅ 이전
+        </button>
+        <button onclick="goToPage(3)" class="pixel-btn bg-green-500 hover:bg-green-400 text-slate-950 font-extrabold text-lg px-8 py-3 rounded-lg">
+          다음 단계 (운동 선택) ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- PAGE 3: 운동 종목 선택 -->
+    <section id="page-3" class="page-step hidden bg-slate-900 border-2 border-slate-700 p-6 rounded-xl shadow-xl">
+      <h2 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
+        <span>3단계: 비밀 작전(운동 종목) 선택</span>
+      </h2>
+      <p class="text-sm text-slate-400 mb-6">오늘 교실에서 단련할 스텔스 운동 종목을 하나 선택하세요.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8" id="workout-list">
+        <!-- JS로 확장된 운동 목록 생성 -->
+      </div>
+
+      <div class="flex justify-between">
+        <button onclick="goToPage(2)" class="pixel-btn bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg px-6 py-3 rounded-lg">
+          ⬅ 이전
+        </button>
+        <button onclick="generateAndGoToResult()" class="pixel-btn bg-green-500 hover:bg-green-400 text-slate-950 font-extrabold text-xl px-10 py-3 rounded-lg">
+          🥷 타임테이블 분석 시작!
+        </button>
+      </div>
+    </section>
+
+    <!-- PAGE 4: 결과 페이지 -->
+    <section id="page-4" class="page-step hidden bg-slate-900 border-4 border-green-500 p-6 rounded-xl shadow-2xl space-y-6">
+      
+      <!-- 🔥 대형 골든타임 메인 전광판 🔥 -->
+      <div id="golden-hero-card" class="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 p-6 rounded-2xl border-4 border-yellow-300 shadow-2xl text-center space-y-3 relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 text-9xl opacity-10 pointer-events-none">🏆</div>
+        <p class="text-sm font-black tracking-widest text-slate-900 bg-yellow-200/80 inline-block px-3 py-1 rounded-full border border-yellow-600">
+          <span id="result-day-text">월요일</span> 최적 침투 시간대
+        </p>
+        
+        <div class="py-2">
+          <h2 class="text-xs font-bold text-slate-800 mb-1">오늘의 GOLDEN TIME</h2>
+          <div class="text-6xl md:text-7xl font-black text-slate-950 tracking-tight animate-pulse" id="golden-hero-period">
+            6교시
+          </div>
+        </div>
+
+        <div class="flex justify-center items-center gap-4 text-sm font-bold bg-slate-950/10 py-2 px-4 rounded-xl max-w-md mx-auto border border-slate-950/20">
+          <div>위험도: <span id="golden-hero-risk" class="text-red-700 font-extrabold text-xl">12%</span></div>
+          <div class="text-slate-400">|</div>
+          <div><span id="golden-hero-teacher" class="text-slate-900"> [자습] 담당 교사</span></div>
+        </div>
+      </div>
+
+      <div class="border-b border-slate-700 pb-2">
+        <h3 class="text-lg font-bold text-slate-200">📋 전체 교시 상세 분석 보고서</h3>
+      </div>
+
+      <!-- 교시별 결과 및 원인 설명 카드 -->
+      <div id="result-list" class="space-y-4">
+        <!-- JS로 결과 카드 및 위험도 이유 출력 -->
+      </div>
+
+      <div class="pt-4 border-t border-slate-800 flex justify-between">
+        <button onclick="goToPage(3)" class="pixel-btn bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg px-6 py-3 rounded-lg">
+          ⬅ 조건 다시 변경하기
+        </button>
+        <button onclick="goToPage(1)" class="pixel-btn bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold text-lg px-6 py-3 rounded-lg">
+          🔄 처음부터 다시 설정
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- 선생님 DB ---
+    const teachersDB = [
+      { id: "t1", name: "박지연", subject: "국어a", strictnessLevel: 3, patrolFrequency: 2, allowStealth: 3 },
+      { id: "t2", name: "배성님", subject: "국어b", strictnessLevel: 4, patrolFrequency: 3, allowStealth: 2 },
+      { id: "t3", name: "박지연", subject: "국어c", strictnessLevel: 3, patrolFrequency: 2, allowStealth: 3 },
+      { id: "t4", name: "양현호", subject: "수학", strictnessLevel: 5, patrolFrequency: 4, allowStealth: 1 },
+      { id: "t5", name: "김민아", subject: "영어", strictnessLevel: 3, patrolFrequency: 3, allowStealth: 3 },
+      { id: "t6", name: "클로이", subject: "영어회화", strictnessLevel: 2, patrolFrequency: 2, allowStealth: 4 },
+      { id: "t7", name: "김지현", subject: "과학A", strictnessLevel: 4, patrolFrequency: 4, allowStealth: 2 },
+      { id: "t8", name: "안다솔", subject: "과학B", strictnessLevel: 3, patrolFrequency: 3, allowStealth: 3 },
+      { id: "t9", name: "조일경", subject: "사회", strictnessLevel: 3, patrolFrequency: 2, allowStealth: 3 },
+      { id: "t10", name: "오혜민", subject: "역사", strictnessLevel: 4, patrolFrequency: 3, allowStealth: 2 },
+      { id: "t11", name: "장민석", subject: "기술", strictnessLevel: 2, patrolFrequency: 2, allowStealth: 4 },
+      { id: "t12", name: "권이담", subject: "가정", strictnessLevel: 2, patrolFrequency: 1, allowStealth: 4 },
+      { id: "t13", name: "류지구", subject: "체육", strictnessLevel: 1, patrolFrequency: 1, allowStealth: 5 },
+      { id: "t14", name: "김윤정", subject: "미술", strictnessLevel: 2, patrolFrequency: 2, allowStealth: 4 },
+      { id: "t15", name: "한상미", subject: "한문", strictnessLevel: 3, patrolFrequency: 2, allowStealth: 3 },
+      { id: "t16", name: "담당 교사", subject: "스클", strictnessLevel: 2, patrolFrequency: 2, allowStealth: 4 },
+      { id: "t17", name: "담당 교사", subject: "연극", strictnessLevel: 3, patrolFrequency: 3, allowStealth: 3 },
+      { id: "t18", name: "담당 교사", subject: "창체", strictnessLevel: 1, patrolFrequency: 1, allowStealth: 5 },
+    ];
+
+    // --- 운동 종목 DB ---
+    const workoutsDB = [
+      { id: "w1", name: "의자 까치발 (종아리)", visibilityScore: 1, desc: "발뒤꿈치를 천천히 들었다 내리기. 움직임 0%" },
+      { id: "w2", name: "복근 은밀한 힘주기", visibilityScore: 1, desc: "10초간 복근 자극 고지 후 호흡 유지. 완전 범죄" },
+      { id: "w3", name: "앉아서 외다리 들기", visibilityScore: 2, desc: "책상 밑에서 한쪽 다리를 평평하게 들기 (허벅지)" },
+      { id: "w4", name: "비밀 분리형 악력기", visibilityScore: 3, desc: "책상 아래에서 악력 단련. 소리 안 나게 주의" },
+      { id: "w5", name: "의자 힙 어덕션 (허벅지 안쪽)", visibilityScore: 1, desc: "양 무릎 사이에 주먹이나 소지품을 끼우고 5초간 강력 압착" },
+      { id: "w6", name: "앉아서 허벅지 누르기 (코어)", visibilityScore: 2, desc: "허벅지 위에 손을 올리고 밑에서는 밀어올리며 등척성 운동" },
+      { id: "w7", name: "책상 밑 정적 밀기 (가슴/삼두)", visibilityScore: 2, desc: "책상 아래 상판을 밑에서 위로 은밀하게 밀어올리는 운동" },
+      { id: "w8", name: "발가락 굴곡 운동 (발목/아치)", visibilityScore: 1, desc: "신발 안에서 발가락을 꽉 쥐었다 펴기. 완전 무음 무시각" },
+    ];
+
+    const columnSeatCounts = [6, 6, 5, 5, 6, 5];
+    let selectedSeat = { col: 3, row: 3 };
+    let selectedWorkoutId = "w1";
+    let selectedDay = "월";
+    let maxPeriods = 7;
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderTimetableInputs();
+      renderSeatGrid();
+      renderWorkouts();
+    });
+
+    function selectDay(day) {
+      selectedDay = day;
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        btn.className = "day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400";
+      });
+      const activeBtn = document.getElementById(`day-${day}`);
+      activeBtn.className = "day-btn flex-1 md:flex-none px-3 py-1.5 text-xs rounded font-bold bg-green-500 text-black";
+      
+      if (day === '금' && maxPeriods === 7) {
+        setMaxPeriod(6);
+      }
+    }
+
+    function setMaxPeriod(count) {
+      maxPeriods = count;
+      document.querySelectorAll('.period-count-btn').forEach(btn => {
+        btn.className = "period-count-btn px-3 py-1.5 text-xs rounded font-bold bg-slate-800 text-slate-400";
+      });
+      document.getElementById(`period-count-${count}`).className = "period-count-btn px-3 py-1.5 text-xs rounded font-bold bg-green-500 text-black";
+      
+      renderTimetableInputs();
+    }
+
+    function goToPage(pageNum) {
+      document.querySelectorAll('.page-step').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`page-${pageNum}`).classList.remove('hidden');
+
+      for (let i = 1; i <= 4; i++) {
+        const badge = document.getElementById(`step-badge-${i}`);
+        if (i === pageNum) {
+          badge.className = "px-3 py-1 rounded-full bg-green-500 text-black font-bold";
+        } else if (i < pageNum) {
+          badge.className = "px-3 py-1 rounded-full bg-slate-700 text-green-400 font-bold";
+        } else {
+          badge.className = "px-3 py-1 rounded-full bg-slate-800 text-slate-500";
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderTimetableInputs() {
+      const container = document.getElementById("timetable-inputs");
+      container.innerHTML = "";
+      const defaultAssignments = [0, 3, 4, 15, 16, 17, 12];
+
+      for (let i = 1; i <= maxPeriods; i++) {
+        const defaultTeacher = teachersDB[defaultAssignments[i - 1]] || teachersDB[0];
+        
+        container.innerHTML += `
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 p-3 bg-slate-950 rounded border border-slate-800 items-center">
+            <span class="md:col-span-1 text-yellow-400 font-bold">${i}교시</span>
+            
+            <div class="md:col-span-4">
+              <select id="teacher-${i}" class="w-full bg-slate-800 text-white p-2 rounded text-sm border border-slate-700">
+                ${teachersDB.map(t => `<option value="${t.id}" ${t.id === defaultTeacher.id ? 'selected' : ''}>[${t.subject}]${t.name}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="md:col-span-3">
+              <select id="subject-type-${i}" class="w-full bg-slate-800 text-white p-2 rounded text-sm border border-slate-700">
+                <option value="LECTURE">일반 수업</option>
+                <option value="SELF_STUDY" ${i === 6 ? 'selected' : ''}>자습</option>
+                <option value="PRACTICAL">실기</option>
+                <option value="PRESENTATION">발표</option>
+                <option value="EVALUATION">수행평가</option>
+                <option value="MEDIA">영상 시청</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-4 flex gap-1">
+              <button type="button" onclick="setCondition(${i}, 'GOOD')" id="cond-${i}-GOOD" class="cond-btn-${i} flex-1 py-1 px-1 text-[11px] rounded bg-slate-800 border border-slate-700">😇 화기애애</button>
+              <button type="button" onclick="setCondition(${i}, 'NORMAL')" id="cond-${i}-NORMAL" class="cond-btn-${i} flex-1 py-1 px-1 text-[11px] rounded bg-green-600 font-bold border border-green-400">😐 평범</button>
+              <button type="button" onclick="setCondition(${i}, 'BAD')" id="cond-${i}-BAD" class="cond-btn-${i} flex-1 py-1 px-1 text-[11px] rounded bg-slate-800 border border-slate-700">🤬 화남</button>
+              <input type="hidden" id="condition-val-${i}" value="NORMAL" />
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function setCondition(period, cond) {
+      document.getElementById(`condition-val-${period}`).value = cond;
+      const btns = document.querySelectorAll(`.cond-btn-${period}`);
+      btns.forEach(btn => {
+        btn.className = `cond-btn-${period} flex-1 py-1 px-1 text-[11px] rounded bg-slate-800 border border-slate-700`;
+      });
+      
+      const targetBtn = document.getElementById(`cond-${period}-${cond}`);
+      if (cond === 'GOOD') targetBtn.className = `cond-btn-${period} flex-1 py-1 px-1 text-[11px] rounded bg-blue-600 font-bold border border-blue-400`;
+      if (cond === 'NORMAL') targetBtn.className = `cond-btn-${period} flex-1 py-1 px-1 text-[11px] rounded bg-green-600 font-bold border border-green-400`;
+      if (cond === 'BAD') targetBtn.className = `cond-btn-${period} flex-1 py-1 px-1 text-[11px] rounded bg-red-600 font-bold border border-red-400`;
+    }
+
+    function renderSeatGrid() {
+      const grid = document.getElementById("seat-grid");
+      grid.innerHTML = "";
+
+      columnSeatCounts.forEach((rowCount, colIdx) => {
+        const colNum = colIdx + 1;
+        const colDiv = document.createElement("div");
+        colDiv.className = "flex flex-col gap-2 items-center";
+        colDiv.innerHTML += `<div class="text-[11px] text-yellow-400 font-bold mb-1">${colNum}열(${rowCount}명)</div>`;
+
+        for (let r = 1; r <= rowCount; r++) {
+          const isSelected = selectedSeat.col === colNum && selectedSeat.row === r;
+          colDiv.innerHTML += `
+            <button onclick="selectSeat(${colNum}, ${r})" class="w-full h-11 flex flex-col items-center justify-center rounded text-xs transition ${isSelected ? 'bg-green-500 text-black font-extrabold ring-4 ring-green-300' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}">
+              <span>${r}행</span>
+              <span class="text-[9px] opacity-75">${r <= 2 ? '고위험' : r >= 5 ? '사각지대' : '보통'}</span>
+            </button>
+          `;
+        }
+        grid.appendChild(colDiv);
+      });
+    }
+
+    function selectSeat(col, row) {
+      selectedSeat = { col, row };
+      document.getElementById("selected-seat-text").innerText = `${col}열(분단) ${row}행 (${row >= 5 ? '저위험 사각지대 🎯' : row <= 2 ? '초고위험 앞자리 ⚠️' : '중간 자리'})`;
+      renderSeatGrid();
+    }
+
+    function renderWorkouts() {
+      const container = document.getElementById("workout-list");
+      container.innerHTML = "";
+
+      workoutsDB.forEach(w => {
+        const isSelected = selectedWorkoutId === w.id;
+        container.innerHTML += `
+          <div onclick="selectWorkout('${w.id}')" class="cursor-pointer p-4 rounded-lg border-2 transition ${isSelected ? 'bg-slate-800 border-green-500 ring-2 ring-green-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}">
+            <div class="flex justify-between items-center mb-1">
+              <h3 class="font-bold text-white">${w.name}</h3>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-700 text-yellow-300">시인성 ${'★'.repeat(w.visibilityScore)}</span>
+            </div>
+            <p class="text-xs text-slate-400">${w.desc}</p>
+          </div>
+        `;
+      });
+    }
+
+    function selectWorkout(id) {
+      selectedWorkoutId = id;
+      renderWorkouts();
+    }
+
+    function calculateStealthRisk(input) {
+      const { teacher, condition, seat, subjectType, workout } = input;
+
+      const teacherBaseRisk = teacher.strictnessLevel + teacher.patrolFrequency + (6 - teacher.allowStealth);
+      const conditionMultipliers = { GOOD: 0.75, NORMAL: 1.0, BAD: 1.4 };
+      const teacherRisk = teacherBaseRisk * conditionMultipliers[condition];
+
+      const distance = Math.sqrt(Math.pow(seat.row - 0, 2) + Math.pow(seat.col - 3.5, 2));
+      const seatWeight = Math.max(0.35, 1.55 - (distance * 0.18));
+
+      const subjectMultipliers = { 
+        EVALUATION: 1.8,
+        PRESENTATION: 1.6,
+        PRACTICAL: 1.3,
+        LECTURE: 1.0,
+        MEDIA: 0.65,
+        SELF_STUDY: 0.35
+      };
+      const subjectWeight = subjectMultipliers[subjectType] || 1.0;
+      const workoutWeight = 0.5 + (workout.visibilityScore * 0.25);
+
+      const rawScore = (teacherRisk / 15) * 45 * seatWeight * subjectWeight * workoutWeight;
+      const riskPercentage = Math.min(100, Math.max(5, Math.round(rawScore)));
+
+      const reasonFactors = [];
+
+      if (subjectType === 'EVALUATION' || subjectType === 'PRESENTATION') {
+        reasonFactors.push(`🚨 수업 방식: ${subjectType === 'EVALUATION' ? '수행평가' : '발표'} 진행으로 감시 시선 최상`);
+      } else if (subjectType === 'SELF_STUDY' || subjectType === 'MEDIA') {
+        reasonFactors.push(`✅ 수업 방식: ${subjectType === 'SELF_STUDY' ? '자습' : '영상 시청'}으로 매우 안전`);
+      }
+
+      if (seat.row <= 2) {
+        reasonFactors.push(`⚠️ 위치: 교탁 바로 앞줄(${seat.row}행)이라 노출 위험 큼`);
+      } else if (seat.row >= 5) {
+        reasonFactors.push(`🎯 위치: 뒤쪽 사각지대(${seat.row}행)로 안전 확보`);
+      }
+
+      if (condition === 'BAD') {
+        reasonFactors.push(`🤬 선생님 기분: '화남' 상태라 순찰 가중치 상승`);
+      } else if (condition === 'GOOD') {
+        reasonFactors.push(`😇 선생님 기분: '화기애애'하여 주의력 저하`);
+      }
+
+      if (workout.visibilityScore >= 3) {
+        reasonFactors.push(`💪 운동 특성: 시인성이 높은 동작이라 들킬 확률 증가`);
+      }
+
+      return { riskPercentage, reasonFactors, subjectTypeStr: getSubjectTypeLabel(subjectType) };
+    }
+
+    function getSubjectTypeLabel(type) {
+      const labels = { LECTURE: '일반수업', SELF_STUDY: '자습', PRACTICAL: '실기', PRESENTATION: '발표', EVALUATION: '수행평가', MEDIA: '영상시청' };
+      return labels[type] || type;
+    }
+
+    function generateAndGoToResult() {
+      const workout = workoutsDB.find(w => w.id === selectedWorkoutId);
+      const results = [];
+
+      for (let i = 1; i <= maxPeriods; i++) {
+        const teacherId = document.getElementById(`teacher-${i}`).value;
+        const teacher = teachersDB.find(t => t.id === teacherId);
+        const subjectType = document.getElementById(`subject-type-${i}`).value;
+        const condition = document.getElementById(`condition-val-${i}`).value;
+
+        const evalResult = calculateStealthRisk({
+          teacher,
+          condition,
+          seat: selectedSeat,
+          subjectType,
+          workout
+        });
+
+        results.push({ period: i, teacher, ...evalResult });
+      }
+
+      const golden = [...results].sort((a, b) => a.riskPercentage - b.riskPercentage)[0];
+
+      // 대형 전광판 데이터 바인딩
+      document.getElementById("result-day-text").innerText = `${selectedDay}요일`;
+      document.getElementById("golden-hero-period").innerText = `${golden.period}교시`;
+      document.getElementById("golden-hero-risk").innerText = `${golden.riskPercentage}%`;
+      document.getElementById("golden-hero-teacher").innerText = `[${golden.teacher.subject}] ${golden.teacher.name} (${golden.subjectTypeStr})`;
+      
+      const resultList = document.getElementById("result-list");
+      resultList.innerHTML = "";
+
+      results.forEach(res => {
+        const isGolden = res.period === golden.period;
+        let statusBg = "bg-slate-950 border-slate-800";
+        let riskColor = "text-green-400";
+        if (res.riskPercentage > 40) riskColor = "text-yellow-400";
+        if (res.riskPercentage > 70) riskColor = "text-red-400";
+
+        if (isGolden) statusBg = "bg-green-950/40 border-2 border-green-500 ring-2 ring-green-500/30";
+
+        resultList.innerHTML += `
+          <div class="p-5 rounded-xl border ${statusBg} space-y-3">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-800 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl font-black ${isGolden ? 'text-green-400' : 'text-slate-400'}">${res.period}교시</span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-white text-lg">[${res.teacher.subject}] ${res.teacher.name}</h3>
+                    <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300 border border-slate-700">${res.subjectTypeStr}</span>
+                    ${isGolden ? '<span class="bg-yellow-400 text-black text-[10px] font-black px-2 py-0.5 rounded animate-pulse">BEST GOLDEN TIME</span>' : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">위험도 평가:</span>
+                <span class="text-2xl font-black ${riskColor}">${res.riskPercentage}%</span>
+              </div>
+            </div>
+
+            <!-- 퍼센트 이유 설명 박스 -->
+            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800/80 text-xs space-y-1">
+              <span class="text-yellow-400 font-bold block mb-1">🔍 수치 산출 주요 원인:</span>
+              ${res.reasonFactors.length > 0 
+                ? res.reasonFactors.map(f => `<div class="text-slate-300">• ${f}</div>`).join('') 
+                : '<div class="text-slate-400">• 특이 위험요소 없음 (평범한 수준 유지)</div>'}
+            </div>
+          </div>
+        `;
+      });
+
+      goToPage(4);
+    }
+  </script>
+</body>
+</html>
